@@ -1,0 +1,14 @@
+http:
+  host: localhost
+  port: 8443
+  ssl:
+    dir: assets/ssl
+    certfile: server.pem
+    keyfile: server.key
+assets:
+  dir: assets/web
+  index: index.html
+zmq:
+  host: localhost
+  port: 5555
+  topic: "ws"

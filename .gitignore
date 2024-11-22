@@ -1,3 +1,5 @@
+web/assets/ssl/*.pem
+web/assets/ssl/*.key
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

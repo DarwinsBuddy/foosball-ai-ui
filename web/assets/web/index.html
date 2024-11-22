@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Client</title>
+</head>
+<body>
+    <h1>WebSocket Client</h1>
+    <div id="messages"></div>
+    <textarea id="messageInput" placeholder="Type your message here...">{"value": 1}</textarea>
+    <button id="sendButton">Send Message</button>
+
+    <script>
+        let ws;
+        const connectWebSocket = () => {
+            console.log('Attempting to connect to WebSocket server...');
+            ws = new WebSocket('wss://localhost:443/ws');
+
+            ws.onopen = () => {
+                console.log('Connected to WebSocket server');
+            };
+
+            ws.onmessage = (event) => {
+                console.log('Received message:', event.data);
+                const messageDiv = document.getElementById('messages');
+                const newMessage = document.createElement('div');
+                newMessage.textContent = event.data;
+                messageDiv.appendChild(newMessage);
+            };
+
+            ws.onclose = (event) => {
+                console.log('Disconnected from WebSocket server:', event);
+                // setTimeout(connectWebSocket, 1000); // Reconnect after 1 second
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        };
+
+        connectWebSocket();
+
+        const sendButton = document.getElementById('sendButton');
+        const messageInput = document.getElementById('messageInput');
+
+        sendButton.addEventListener('click', () => {
+            const message = messageInput.value;
+            if (message && ws.readyState === WebSocket.OPEN) {
+                console.log('Sending message:', message);
+                ws.send(message);
+                messageInput.value = '{"value": 1}';
+            }
+        });
+    </script>
+</body>
+</html>
