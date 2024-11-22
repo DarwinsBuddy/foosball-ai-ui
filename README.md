@@ -1,5 +1,8 @@
 # foosball-ai-ui
 
+![Foosball AI UI](bitmap.png)
+
+
 ## Description
 This project is a web interface for the [foosball-ai](https://github.com/foosball-ai/foosball-ai) project. It uses websockets to receive updates from the AI and display them in real-time.
 

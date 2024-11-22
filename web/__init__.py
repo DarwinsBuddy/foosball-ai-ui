@@ -31,6 +31,7 @@ class Webserver:
         # Set up HTTP routes
         self.http_app.router.add_get('/', self.get_index)
         self.http_app.router.add_get('/ws', self.websocket_handler)  # WebSocket route
+        self.http_app.router.add_get('/favicon.ico', self.get_favicon)  # Favicon route
 
         self.start_lock = threading.Lock()
         self.q = asyncio.Queue()
@@ -46,6 +47,17 @@ class Webserver:
             return web.Response(text=html_content, content_type='text/html')
         except FileNotFoundError:
             logging.error("Index file not found.")
+            return web.Response(text="404 Not Found", status=404)
+
+    @staticmethod
+    async def get_favicon(request):
+        file_path = os.path.join(os.path.dirname(__file__), request.app['assets_dir'], 'favicon.ico')
+        try:
+            with open(file_path, "rb") as file:
+                favicon_content = file.read()
+            return web.Response(body=favicon_content, content_type='image/x-icon')
+        except FileNotFoundError:
+            logging.error("Favicon file not found.")
             return web.Response(text="404 Not Found", status=404)
 
     @staticmethod
