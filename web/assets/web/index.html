@@ -7,26 +7,37 @@
 </head>
 <body>
     <h1>WebSocket Client</h1>
+    <div id="mpsCount">mps: 0</div>
+    <div id="messageCount">Messages received: 0</div>
     <div id="messages"></div>
     <textarea id="messageInput" placeholder="Type your message here...">{"value": 1}</textarea>
     <button id="sendButton">Send Message</button>
+    <button id="clearButton">Clear State</button>
+    <div id="lastMessage"></div>
 
     <script>
         let ws;
+        let messageCount = 0;
+        let startTime = Date.now();
         const connectWebSocket = () => {
             console.log('Attempting to connect to WebSocket server...');
-            ws = new WebSocket('wss://localhost:443/ws');
+            ws = new WebSocket('wss://localhost:8443/ws');
 
             ws.onopen = () => {
                 console.log('Connected to WebSocket server');
             };
 
             ws.onmessage = (event) => {
-                console.log('Received message:', event.data);
-                const messageDiv = document.getElementById('messages');
-                const newMessage = document.createElement('div');
-                newMessage.textContent = event.data;
-                messageDiv.appendChild(newMessage);
+                //console.log('Received message:', event.data);
+                messageCount++;
+                const currentTime = Date.now();
+                const elapsedTime = (currentTime - startTime) / 1000; // in seconds
+                const mps = (messageCount / elapsedTime).toFixed(2);
+                document.getElementById('mpsCount').textContent = `mps: ${mps}`;
+                document.getElementById('messageCount').textContent = `Messages received: ${messageCount}`;
+
+                const lastMessageDiv = document.getElementById('lastMessage');
+                lastMessageDiv.textContent = JSON.stringify(JSON.parse(event.data), null, 2);
             };
 
             ws.onclose = (event) => {
@@ -42,6 +53,7 @@
         connectWebSocket();
 
         const sendButton = document.getElementById('sendButton');
+        const clearButton = document.getElementById('clearButton');
         const messageInput = document.getElementById('messageInput');
 
         sendButton.addEventListener('click', () => {
@@ -51,6 +63,14 @@
                 ws.send(message);
                 messageInput.value = '{"value": 1}';
             }
+        });
+
+        clearButton.addEventListener('click', () => {
+            messageCount = 0;
+            startTime = Date.now();
+            document.getElementById('mpsCount').textContent = 'mps: 0';
+            document.getElementById('messageCount').textContent = 'Messages received: 0';
+            document.getElementById('lastMessage').textContent = '';
         });
     </script>
 </body>

@@ -13,10 +13,10 @@ def zmq_publisher(zmq_address="tcp://127.0.0.1:5555", topic="ws"):
 
     while True:
         # Create a message to send
-        message = {"type": 1, "data": "ping"}
-        print(f"Sending message: {message}")
+        message = {"data": 1, "type": "ping"}
+        print(f"Sending message: {message} at  {topic} ({zmq_address})")
         if topic is not None:
-            socket.send_multipart([bytes(topic, "utf-8"), bytes(json.dumps(message), "utf-8")])
+            socket.send_string(f"{topic} {json.dumps(message)}")
         else:
             # Send the message
             socket.send_string(json.dumps(message))

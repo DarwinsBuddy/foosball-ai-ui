@@ -13,7 +13,7 @@ from asyncio.tasks import gather
 from .zmq import ZMQSub
 
 class Webserver:
-    def __init__(self, host="localhost", port=443, assets_dir='assets/web', ssl_dir='assets/ssl', certfile='server.pem', keyfile='server.key', index_file='index.html', zmq_host='localhost', zmq_port=5556, zmq_topic="ws"):
+    def __init__(self, host="localhost", port=443, assets_dir='assets/web', ssl_dir='assets/ssl', certfile='server.pem', keyfile='server.key', index_file='index.html', zmq_host='localhost', zmq_port=5555, zmq_topic="ws"):
         config.fileConfig('logging.ini')
         self.host = host
         self.port = port
@@ -73,12 +73,11 @@ class Webserver:
         ws = web.WebSocketResponse()
         await ws.prepare(request)
         self.active_connections.add(ws)
-        logging.debug(f">>>> Active connections: {len(self.active_connections)}")
+        logging.debug(f"Active connections: {len(self.active_connections)}")
         logging.debug("New WebSocket connection established.")
 
         try:
             async for msg in ws:
-                logging.debug(f"Received message: {msg}")
                 if msg.type == web.WSMsgType.TEXT:
                     # Handle text messages
                     try:
@@ -103,22 +102,21 @@ class Webserver:
 
     def broadcast(self, message: dict | str):
         if self.q is not None:
-            print("putting into q", message)
             asyncio.run_coroutine_threadsafe(self.q.put(message), asyncio.get_event_loop())
-            print("message put into queue")
         else:
             logging.error("Queue is None")
 
     async def process_queue(self):
         while not self.stop_event.is_set():
-            await asyncio.sleep(0.1)
             try:
                 if self.q is not None:
-                    m = self.q.get_nowait()
+                    m = await asyncio.wait_for(self.q.get(), timeout=1)
                     await self._broadcast(m)
                 else:
                     raise Exception("Queue is None")
             except QueueEmpty:
+                pass
+            except asyncio.TimeoutError:
                 pass
             except Exception as e:
                 logging.error("GET QUEUE: ", e)
@@ -127,8 +125,7 @@ class Webserver:
 
 
     async def _broadcast(self, message: dict | str | bytes):
-        print(f">>>> Active connections: {len(self.active_connections)}")
-        logging.debug(f"message: {message}")
+        # logging.debug(f"message: {message}")
         if self.active_connections:
             if isinstance(message, dict):
                 await gather(*(ws.send_json(message) for ws in self.active_connections))

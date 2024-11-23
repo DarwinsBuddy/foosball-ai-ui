@@ -30,6 +30,9 @@ if __name__ == "__main__":
         ssl_dir=args.ssl_dir,
         certfile=args.certfile, 
         keyfile=args.keyfile, 
-        index_file=args.index_file
+        index_file=args.index_file,
+        zmq_topic=args.zmq_topic,
+        zmq_host=args.zmq_host,
+        zmq_port=args.zmq_port
     )
     webserver.run()
